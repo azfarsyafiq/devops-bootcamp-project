@@ -15,7 +15,7 @@ data "aws_iam_instance_profile" "my_ssm_profile" {
 resource "aws_instance" "web-server" {
   ami                    = data.aws_ami.my_ami.id
   instance_type          = "t3.micro"
-  subnet_id              = aws_subnet.my_subnet.id
+  subnet_id              = module.my_vpc.public_subnets[0]
   vpc_security_group_ids = [aws_security_group.devops-public-sg.id]
   iam_instance_profile   = data.aws_iam_instance_profile.my_ssm_profile.name
 
@@ -27,7 +27,7 @@ resource "aws_instance" "web-server" {
 resource "aws_instance" "ansible-controller" {
   ami                    = data.aws_ami.my_ami.id
   instance_type          = "t3.micro"
-  subnet_id              = aaws_subnet.my_private_subnet.id
+  subnet_id              = module.my_vpc.private_subnets[0]
   vpc_security_group_ids = [aws_security_group.devops-private-sg.id]
   iam_instance_profile   = data.aws_iam_instance_profile.my_ssm_profile.name
 
@@ -39,7 +39,7 @@ resource "aws_instance" "ansible-controller" {
 resource "aws_instance" "monitoring-server" {
   ami                    = data.aws_ami.my_ami.id
   instance_type          = "t3.micro"
-  subnet_id              = aws_subnet.my_private_subnet.id
+  subnet_id              = module.my_vpc.private_subnets[0]
   vpc_security_group_ids = [aws_security_group.devops-private-sg.id]
   iam_instance_profile   = data.aws_iam_instance_profile.my_ssm_profile.name
 
