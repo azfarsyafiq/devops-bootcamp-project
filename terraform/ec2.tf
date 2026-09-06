@@ -22,6 +22,7 @@ resource "aws_instance" "web_server" {
   key_name               = "livyattan-keypair"
   tags = {
     Name = "web_server"
+    Role = "devops-node"
   }
 }
 
@@ -60,5 +61,6 @@ resource "aws_instance" "monitoring_server" {
 
   tags = {
     Name = "monitoring_server"
+    Role = "devops-node"
   }
 }
