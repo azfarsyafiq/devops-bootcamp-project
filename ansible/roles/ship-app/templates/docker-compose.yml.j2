@@ -1,0 +1,7 @@
+services:
+  ship:
+    image: {{ ecr_image }}
+    container_name: ship
+    ports:
+      - "{{ app.port }}:80"
+    restart: unless-stopped

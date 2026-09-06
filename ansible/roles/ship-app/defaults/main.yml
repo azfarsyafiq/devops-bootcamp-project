@@ -1,0 +1,14 @@
+---
+# Mesin deploy seluruh image ke private ECR.
+# TUKAR nilai di bawah ikut akaun AWS kamu.
+aws_account_id: "762825106974"
+aws_region: ap-southeast-1
+ecr_repository: ship
+
+app:
+  version: latest
+  node_version: 20-alpine
+  port: 80
+
+ecr_registry: "{{ aws_account_id }}.dkr.ecr.{{ aws_region }}.amazonaws.com"
+ecr_image: "{{ ecr_registry }}/{{ ecr_repository }}:{{ app.version }}"

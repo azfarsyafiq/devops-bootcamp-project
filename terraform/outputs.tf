@@ -21,3 +21,7 @@ output "monitoring_server" {
 output "monitoring_server_ssm_command" {
   value = "aws ssm start-session --target ${aws_instance.monitoring_server.id}"
 }
+
+output "ecr_repository_url" {
+  value = aws_ecr_repository.ship.repository_url
+}

@@ -1,0 +1,67 @@
+---
+- name: Install helpers (awscli + Python docker SDK)
+  ansible.builtin.apt:
+    name: awscli
+    state: present
+    update_cache: true
+
+- name: Install Python docker SDK
+  ansible.builtin.pip:
+    name: docker
+    state: present
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+
+- name: Clone ship application source
+  ansible.builtin.git:
+    repo: https://github.com/Infratify/ship.git
+    dest: /opt/ship
+    version: main
+    force: true
+  # force:true -> tarik selalu versi terkini, selamat untuk run berulang
+
+- name: Render Dockerfile
+  ansible.builtin.template:
+    src: Dockerfile.j2
+    dest: /opt/ship/Dockerfile
+
+- name: Render nginx config
+  ansible.builtin.template:
+    src: nginx.conf.j2
+    dest: /opt/ship/nginx.conf
+
+- name: Render docker-compose.yml
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: /opt/ship/docker-compose.yml
+
+- name: Get ECR login password
+  ansible.builtin.command:
+    cmd: aws ecr get-login-password --region {{ aws_region }}
+  register: ecr_login
+  changed_when: false
+
+- name: Login to private ECR
+  community.docker.docker_login:
+    registry_url: "{{ ecr_registry }}"
+    username: AWS
+    password: "{{ ecr_login.stdout }}"
+
+- name: Build image dan tolak ke private ECR
+  community.docker.docker_image:
+    name: "{{ ecr_image }}"
+    source: build
+    build:
+      path: /opt/ship
+      pull: true
+    push: true
+    force_source: true
+    state: present
+
+- name: Run container guna docker compose
+  community.docker.docker_compose_v2:
+    project_src: /opt/ship
+    state: present
+  vars:
+    # required by community.docker.docker_compose_v2
+    ansible_python_interpreter: /usr/bin/python3
