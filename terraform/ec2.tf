@@ -19,9 +19,9 @@ resource "aws_instance" "web_server" {
   private_ip             = "10.0.0.5"
   vpc_security_group_ids = [aws_security_group.devops-public-sg.id]
   iam_instance_profile   = data.aws_iam_instance_profile.my_ssm_profile.name
-
+  key_name               = "livyattan-keypair"
   tags = {
-    Name = "tf-server-1"
+    Name = "web_server"
   }
 }
 
@@ -40,10 +40,12 @@ resource "aws_instance" "ansible_controller" {
   subnet_id              = module.my_vpc.private_subnets[0]
   private_ip             = "10.0.0.135"
   vpc_security_group_ids = [aws_security_group.devops-private-sg.id]
+  key_name               = "livyattan-keypair"
   iam_instance_profile   = data.aws_iam_instance_profile.my_ssm_profile.name
+  user_data              = file("userdata/ansible-controller.sh")
 
   tags = {
-    Name = "tf-server-2"
+    Name = "ansible_controller"
   }
 }
 
@@ -53,9 +55,10 @@ resource "aws_instance" "monitoring_server" {
   subnet_id              = module.my_vpc.private_subnets[0]
   private_ip             = "10.0.0.136"
   vpc_security_group_ids = [aws_security_group.devops-private-sg.id]
+  key_name               = "livyattan-keypair"
   iam_instance_profile   = data.aws_iam_instance_profile.my_ssm_profile.name
 
   tags = {
-    Name = "tf-server-private"
+    Name = "monitoring_server"
   }
 }
