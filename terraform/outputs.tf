@@ -15,7 +15,7 @@ output "ansible_controller_ssm_command" {
 }
 
 output "monitoring_server" {
-  value = aws_instance.monitoring_server.public_ip
+  value = aws_instance.monitoring_server.private_ip
 }
 
 output "monitoring_server_ssm_command" {
