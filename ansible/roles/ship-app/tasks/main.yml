@@ -1,16 +1,14 @@
 ---
-- name: Install helpers (awscli + Python docker SDK)
-  ansible.builtin.apt:
-    name: awscli
-    state: present
-    update_cache: true
-
-- name: Install Python docker SDK
+- name: Install Python docker SDK + awscli
   ansible.builtin.pip:
-    name: docker
+    name:
+      - docker
+      - awscli
     state: present
   vars:
     ansible_python_interpreter: /usr/bin/python3
+  # awscli tidak lagi wujud sebagai pakej apt pada Ubuntu 24.04,
+  # jadi dipasang melalui pip.
 
 - name: Clone ship application source
   ansible.builtin.git:
