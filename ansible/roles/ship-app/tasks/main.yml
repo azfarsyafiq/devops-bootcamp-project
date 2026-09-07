@@ -13,6 +13,7 @@
           - docker
           - awscli
         state: present
+        break_system_packages: true
   vars:
     ansible_python_interpreter: /usr/bin/python3
   # awscli tidak lagi wujud sebagai pakej apt pada Ubuntu 24.04,
