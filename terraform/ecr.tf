@@ -17,3 +17,9 @@ resource "aws_iam_role_policy_attachment" "ec2_ecr" {
   role       = "EC2-SSM-Role"
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess"
 }
+
+# Dynamic inventory aws_ec2 perlu kebenaran untuk list instance
+resource "aws_iam_role_policy_attachment" "ec2_ec2_readonly" {
+  role       = "EC2-SSM-Role"
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess"
+}
