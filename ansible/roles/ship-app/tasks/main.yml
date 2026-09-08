@@ -19,9 +19,9 @@
   # awscli tidak lagi wujud sebagai pakej apt pada Ubuntu 24.04,
   # jadi dipasang melalui pip.
 
-- name: Clone ship application source
+- name: Clone project repository
   ansible.builtin.git:
-    repo: https://github.com/Infratify/ship.git
+    repo: https://github.com/azfarsyafiq/devops-bootcamp-final-project.git
     dest: /opt/ship
     version: main
     force: true
@@ -30,17 +30,17 @@
 - name: Render Dockerfile
   ansible.builtin.template:
     src: Dockerfile.j2
-    dest: /opt/ship/Dockerfile
+    dest: /opt/ship/app/Dockerfile
 
 - name: Render nginx config
   ansible.builtin.template:
     src: nginx.conf.j2
-    dest: /opt/ship/nginx.conf
+    dest: /opt/ship/app/nginx.conf
 
 - name: Render docker-compose.yml
   ansible.builtin.template:
     src: docker-compose.yml.j2
-    dest: /opt/ship/docker-compose.yml
+    dest: /opt/ship/app/docker-compose.yml
 
 - name: Get ECR login password
   ansible.builtin.command:
@@ -59,7 +59,7 @@
     name: "{{ ecr_image }}"
     source: build
     build:
-      path: /opt/ship
+      path: /opt/ship/app
       pull: true
     push: true
     force_source: true
@@ -67,7 +67,7 @@
 
 - name: Run container guna docker compose
   community.docker.docker_compose_v2:
-    project_src: /opt/ship
+    project_src: /opt/ship/app
     state: present
   vars:
     # required by community.docker.docker_compose_v2
