@@ -16,10 +16,10 @@ resource "aws_instance" "web_server" {
   ami                    = data.aws_ami.my_ami.id
   instance_type          = "t3.micro"
   subnet_id              = module.my_vpc.public_subnets[0]
-  private_ip             = "10.0.0.5"
+  private_ip             = var.web_server_private_ip
   vpc_security_group_ids = [aws_security_group.devops-public-sg.id]
   iam_instance_profile   = data.aws_iam_instance_profile.my_ssm_profile.name
-  key_name               = "livyattan-keypair"
+  key_name               = var.key_name
   tags = {
     Name = "web_server"
     Role = "devops-node"
@@ -39,9 +39,9 @@ resource "aws_instance" "ansible_controller" {
   ami                    = data.aws_ami.my_ami.id
   instance_type          = "t3.micro"
   subnet_id              = module.my_vpc.private_subnets[0]
-  private_ip             = "10.0.0.135"
+  private_ip             = var.ansible_controller_private_ip
   vpc_security_group_ids = [aws_security_group.devops-private-sg.id]
-  key_name               = "livyattan-keypair"
+  key_name               = var.key_name
   iam_instance_profile   = data.aws_iam_instance_profile.my_ssm_profile.name
   user_data              = file("userdata/ansible-controller.sh")
 
@@ -54,9 +54,9 @@ resource "aws_instance" "monitoring_server" {
   ami                    = data.aws_ami.my_ami.id
   instance_type          = "t3.micro"
   subnet_id              = module.my_vpc.private_subnets[0]
-  private_ip             = "10.0.0.136"
+  private_ip             = var.monitoring_server_private_ip
   vpc_security_group_ids = [aws_security_group.devops-private-sg.id]
-  key_name               = "livyattan-keypair"
+  key_name               = var.key_name
   iam_instance_profile   = data.aws_iam_instance_profile.my_ssm_profile.name
 
   tags = {

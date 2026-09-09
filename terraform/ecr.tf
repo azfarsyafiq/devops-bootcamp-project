@@ -12,10 +12,38 @@ resource "aws_ecr_repository" "ship" {
   }
 }
 
-# Node perlu kebenaran ECR untuk login/tolak/tarik imej
+resource "aws_iam_policy" "ecr_ship" {
+  name        = "EC2-ECR-Ship-Access"
+  description = "Allow EC2 to login/push/pull only from ship ECR repository"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = "ecr:GetAuthorizationToken"
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:BatchGetImage",
+          "ecr:PutImage",
+          "ecr:InitiateLayerUpload",
+          "ecr:UploadLayerPart",
+          "ecr:CompleteLayerUpload"
+        ]
+        Resource = aws_ecr_repository.ship.arn
+      }
+    ]
+  })
+}
+
 resource "aws_iam_role_policy_attachment" "ec2_ecr" {
   role       = "EC2-SSM-Role"
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess"
+  policy_arn = aws_iam_policy.ecr_ship.arn
 }
 
 # Dynamic inventory aws_ec2 perlu kebenaran untuk list instance

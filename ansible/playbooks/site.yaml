@@ -1,4 +1,4 @@
-- name: Install Docker
+- name: Provision web_server (Docker + ship app container)
   hosts: web_server
   gather_facts: true
   become: true
@@ -8,6 +8,7 @@
       - ubuntu
     docker_install_compose_plugin: true
     ansible_aws_ssm_region: ap-southeast-1
-    ansible_aws_ssm_bucket_name: devops-bootcamp-ssm-session-bucket-ap-southeast-1
+    ansible_aws_ssm_bucket_name: devops-bootcamp-ssm-session-bucket-azfarsyafiq
   roles:
     - geerlingguy.docker
+    - ship-app
