@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# ---------------- Environment variables ----------------
+echo 'export AWS_ACCOUNT_ID="762825106974"' >> /etc/environment
+
 apt-get update -y
 apt-get install -y ansible python3-pip python3-boto3 git
 
@@ -20,7 +23,7 @@ ansible-galaxy role install geerlingguy.docker -p /etc/ansible/roles
 
 # ---------------- S3 bucket untuk aws_ssm file transfer ----------------
 # Connection plugin aws_ssm memerlukan S3 bucket untuk hantar/terima fail.
-BUCKET="devops-bootcamp-ssm-session-bucket"
+BUCKET="devops-bootcamp-ssm-session-bucket-azfarsyafiq"
 aws s3api create-bucket \
   --bucket "$BUCKET" \
   --region ap-southeast-1 \
@@ -54,7 +57,6 @@ EOF
 cat > /etc/ansible/ansible.cfg <<'EOF'
 [defaults]
 inventory = /etc/ansible/inventory/aws_ec2.yml
-host_key_checking = False
 collections_path = /usr/share/ansible/collections
 roles_path = /opt/final-project/ansible/roles:/etc/ansible/roles
 deprecation_warnings = False
@@ -69,7 +71,7 @@ chmod 644 /etc/ansible/inventory/aws_ec2.yml /etc/ansible/ansible.cfg
 # Repo project ini (public) - clone terus via HTTPS.
 # Playbook dijalankan dari /opt/final-project/ansible.
 if [ ! -d /opt/final-project/.git ]; then
-  git clone https://github.com/azfarsyafiq/devops-bootcamp-project.git /opt/final-project
+  git clone https://github.com/azfarsyafiq/devops-bootcamp-final-project.git /opt/final-project
 else
   git -C /opt/final-project pull
 fi

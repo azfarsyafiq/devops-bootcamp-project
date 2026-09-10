@@ -57,7 +57,7 @@ resource "aws_security_group" "devops-private-sg" {
 resource "aws_vpc_security_group_ingress_rule" "public_monitoring" {
   security_group_id = aws_security_group.devops-public-sg.id
 
-  cidr_ipv4   = "10.0.0.136/32"
+  cidr_ipv4   = "${var.monitoring_server_private_ip}/32"
   ip_protocol = "tcp"
   from_port   = 9100
   to_port     = 9100

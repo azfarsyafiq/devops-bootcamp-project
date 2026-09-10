@@ -1,0 +1,11 @@
+---
+monitoring_dir: /opt/monitoring
+
+prometheus:
+  port: 9090
+  scrape_interval: 15s
+
+grafana:
+  port: 3000
+
+web_server_private_ip: "10.0.0.5"

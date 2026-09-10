@@ -1,0 +1,25 @@
+- name: Deploy monitoring stack
+  hosts: monitoring_server
+  gather_facts: true
+  become: true
+  connection: community.aws.aws_ssm
+  vars:
+    docker_users:
+      - ubuntu
+    docker_install_compose_plugin: true
+    ansible_aws_ssm_region: ap-southeast-1
+    ansible_aws_ssm_bucket_name: devops-bootcamp-ssm-session-bucket-azfarsyafiq
+  roles:
+    - geerlingguy.docker
+    - monitoring-server
+
+- name: Deploy node_exporter on web server
+  hosts: web_server
+  gather_facts: true
+  become: true
+  connection: community.aws.aws_ssm
+  vars:
+    ansible_aws_ssm_region: ap-southeast-1
+    ansible_aws_ssm_bucket_name: devops-bootcamp-ssm-session-bucket-azfarsyafiq
+  roles:
+    - node-exporter

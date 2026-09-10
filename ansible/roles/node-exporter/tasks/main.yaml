@@ -1,0 +1,9 @@
+---
+- name: Run node_exporter container
+  community.docker.docker_container:
+    name: node_exporter
+    image: prom/node-exporter:latest
+    state: started
+    restart_policy: unless-stopped
+    ports:
+      - "9100:9100"
