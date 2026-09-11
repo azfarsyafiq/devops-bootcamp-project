@@ -115,8 +115,6 @@ terraform apply -var-file terraform.tfvars
 From the `ansible_controller`, run the playbooks (they connect to the nodes over SSM):
 
 ```bash
-export AWS_ACCOUNT_ID="<account-id>"
-
 ansible-playbook playbooks/site.yaml -e "aws_region=ap-southeast-1"
 ansible-playbook playbooks/monitoring.yaml -e "web_server_private_ip=10.0.0.5"
 ```

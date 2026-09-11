@@ -1,9 +1,6 @@
 #!/bin/bash
 set -e
 
-# ---------------- Environment variables ----------------
-echo 'export AWS_ACCOUNT_ID="762825106974"' >> /etc/environment
-
 apt-get update -y
 apt-get install -y ansible python3-pip python3-boto3 git
 

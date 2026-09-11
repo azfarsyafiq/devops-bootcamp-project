@@ -1,6 +1,6 @@
 ---
-# AWS account ID — wajib di-pass via --extra-vars
-aws_account_id: "{{ lookup('env', 'AWS_ACCOUNT_ID') }}"
+# AWS account ID — bukan secret, letak direct di sini; boleh override via --extra-vars
+aws_account_id: "762825106974"
 aws_region: ap-southeast-1
 ecr_repository: ship
 
