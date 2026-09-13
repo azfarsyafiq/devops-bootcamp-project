@@ -18,31 +18,41 @@ Elastic IP dengan proksi Cloudflare yang pilihan.
 
 ## Seni Bina
 
-```mermaid
-graph LR
-    subgraph AWS
-        VPC[VPC devops-vpc 10.0.0.0/24]
-        subgraph Public
-            WS[web_server EC2<br/>nginx + ship app container<br/>EIP 54.169.44.191]
-        end
-        subgraph Private
-            AC[ansible_controller EC2]
-            MS[monitoring_server EC2<br/>Prometheus + Grafana + cloudflared]
-        end
-        ECR[(ECR repo: ship)]
-    end
-    CF[Cloudflare Tunnel] -->|"https://monitoring.yelight.cc"| MS
-    CF2[Cloudflare proxy] -->|"https://web.infratify.com"| WS
-
-    GH[GitHub repo] -->|"ansible clone /opt/ship"| WS
-    WS -->|push image| ECR
-    ECR -->|pull image| WS
-    WS -->|"node_exporter :9100"| MS
-    AC -->|"ansible (community.aws.aws_ssm)"| WS
-    AC -->|"ansible (community.aws.aws_ssm)"| MS
-    VPC --- WS
-    VPC --- AC
-    VPC --- MS
+```text
+                         ┌────────────────── CLOUDFLARE ──────────────────┐
+                         │                                                │
+                         │  web.infratify.com   monitoring.yelight.cc     │
+                         │       │                        │               │
+                         └───────┼────────────────────────┼───────────────┘
+                                 │ (proxy)                │ (tunnel keluar)
+                                 │                        ▼
+┌───────────────────────────────────────────────────────────────────────────┐
+│                      AWS  (VPC devops-vpc 10.0.0.0/24)                   │
+│                                                                           │
+│  ┌───────────────── PUBLIC ─────────────────┐                             │
+│  │  web_server  t3.micro                    │                             │
+│  │  EIP 54.169.44.191                       │                             │
+│  │  nginx ──► ship app (Docker)             │                             │
+│  │  node_exporter :9100                     │                             │
+│  └───────────────┬──────────────────────────┘                             │
+│                  │  scrape :9100 (setiap 15s)                             │
+│  ┌───────────────▼────────── PRIVATE ──────┐                             │
+│  │  monitoring_server  t3.micro            │                             │
+│  │  Prometheus :9090                       │                             │
+│  │  Grafana    :3000                       │                             │
+│  │  cloudflared                            │                             │
+│  └───────────────┬─────────────────────────┘                             │
+│                  │  ansible (AWS SSM)                                    │
+│  ┌───────────────▼──────────────────────────┐                             │
+│  │  ansible_controller  t3.micro            │                             │
+│  │  ansible + aws_ssm plugin + inventory    │                             │
+│  └──────────────────────────────────────────┘                             │
+│                                                                           │
+│  Web <──pull / push──> ECR repo: ship                                    │
+└───────────────────────────────────────────────────────────────────────────┘
+                     │
+                     ▼
+       GitHub repo ──clone /opt/ship──► web_server (via SSM)
 ```
 
 ### Komponen
