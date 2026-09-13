@@ -3,6 +3,8 @@
   gather_facts: true
   become: true
   connection: community.aws.aws_ssm
+  vars_files:
+    - ../group_vars/all/secrets.yaml
   vars:
     docker_users:
       - ubuntu
