@@ -4,13 +4,11 @@ set -e
 apt-get update -y
 apt-get install -y ansible python3-pip python3-boto3 git
 
-# Session Manager plugin diperlukan oleh connection plugin aws_ssm
+
 cd /tmp
 curl -fsSL https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb -o session-manager-plugin.deb
 dpkg -i session-manager-plugin.deb
 
-# Komunikasi Ansible guna SSM connection plugin (community.aws) +
-# deploy container guna community.docker + role galaxy geerlingguy.docker
 ansible-galaxy collection install \
   community.aws \
   community.docker \
@@ -18,8 +16,6 @@ ansible-galaxy collection install \
 
 ansible-galaxy role install geerlingguy.docker -p /etc/ansible/roles
 
-# ---------------- S3 bucket untuk aws_ssm file transfer ----------------
-# Connection plugin aws_ssm memerlukan S3 bucket untuk hantar/terima fail.
 BUCKET="devops-bootcamp-ssm-session-bucket-azfarsyafiq"
 aws s3api create-bucket \
   --bucket "$BUCKET" \
@@ -27,10 +23,6 @@ aws s3api create-bucket \
   --create-bucket-configuration LocationConstraint=ap-southeast-1 \
   >/dev/null 2>&1 || true
 
-# ---------------- Inventory dinamik AWS EC2 ----------------
-# Auto-detect node guna tag "Role: devops-node".
-# ansible_connection=aws_ssm -> Ansible berhubung melalui AWS SSM,
-# ansible_host = instance ID node.
 mkdir -p /etc/ansible/inventory
 
 cat > /etc/ansible/inventory/aws_ec2.yml <<EOF
@@ -64,11 +56,9 @@ EOF
 
 chmod 644 /etc/ansible/inventory/aws_ec2.yml /etc/ansible/ansible.cfg
 
-# ---------------- Sumber playbook (git clone, idempotent) ----------------
-# Repo project ini (public) - clone terus via HTTPS.
-# Playbook dijalankan dari /opt/final-project/ansible.
+
 if [ ! -d /opt/final-project/.git ]; then
-  git clone https://github.com/azfarsyafiq/devops-bootcamp-final-project.git /opt/final-project
+  git clone https://github.com/azfarsyafiq/devops-bootcamp-project.git /opt/final-project
 else
   git -C /opt/final-project pull
 fi
