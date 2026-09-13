@@ -31,6 +31,12 @@
     src: docker-compose.yml.j2
     dest: "{{ monitoring_dir }}/docker-compose.yml"
 
+- name: Render .env untuk cloudflared
+  ansible.builtin.template:
+    src: env.j2
+    dest: "{{ monitoring_dir }}/.env"
+    mode: "0600"
+
 - name: Start monitoring stack guna docker compose
   community.docker.docker_compose_v2:
     project_src: "{{ monitoring_dir }}"

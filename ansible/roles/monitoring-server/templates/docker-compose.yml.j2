@@ -19,5 +19,13 @@ services:
       - grafana-data:/var/lib/grafana                     # Named volume
     restart: unless-stopped
 
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    restart: unless-stopped
+    environment:
+      - CLOUDFLARE_TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+    command: tunnel --no-autoupdate run --token $${CLOUDFLARE_TUNNEL_TOKEN}
+
 volumes:
   grafana-data:

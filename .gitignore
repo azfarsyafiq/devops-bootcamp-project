@@ -13,6 +13,8 @@ crash.log
 .env
 *.pem
 *.key
+.vault_pass
+*.vault_pass
 
 # IDE
 .idea/
