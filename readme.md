@@ -1,21 +1,22 @@
 # DevOps Bootcamp Final Project 2026
 
-An end-to-end DevOps project that provisions a **customisable Three.js ship microsite** on AWS and
-monitors it — using Terraform for infrastructure as code, Ansible for configuration management and
-deployment, and a GitHub Actions workflow that publishes this page to GitHub Pages.
+Projek DevOps hujung-ke-hujung yang menyediakan **laman mikro Three.js kapal boleh suai** di AWS
+serta memantaunya — menggunakan Terraform sebagai infrastruktur-sebagai-kod, Ansible untuk pengurusan
+konfigurasi dan deployment, serta workflow GitHub Actions yang menerbitkan halaman ini ke GitHub Pages.
 
-## Overview
+## Gambaran Keseluruhan
 
-The pipeline takes a tiny Vite + Three.js app (`app/`), wraps it in a Docker image, pushes it to a
-private Amazon ECR repository, and runs it on an EC2 instance behind nginx. A separate monitoring
-stack (Prometheus + Grafana) scrapes metrics from the app server via a `node_exporter` container.
+Pipeline ini mengambil aplikasi Vite + Three.js yang kecil (`app/`), membungkusnya dalam imej Docker,
+menghantarnya ke repositori Amazon ECR yang peribadi, dan menjalankannya pada instans EC2 di belakang
+nginx. Stack pemantauan berasingan (Prometheus + Grafana) mengutip metrik daripada pelayan aplikasi
+melalui kontena `node_exporter`.
 
-Everything is bootstrapped and deployed through **AWS Systems Manager (SSM)** — no SSH keys or public
-ports needed for management. The Grafana dashboard is exposed through a **Cloudflare Tunnel** (no public
-IP or open port on the monitoring server), while the web app is reached via its Elastic IP and optional
-Cloudflare proxy.
+Segala-galanya di-bootstrap dan di-deploy melalui **AWS Systems Manager (SSM)** — tiada kunci SSH atau
+port awam diperlukan untuk pengurusan. Dashboard Grafana didedahkan melalui **Cloudflare Tunnel**
+(tiada IP awam atau port terbuka pada pelayan pemantauan), manakala aplikasi web boleh dicapai melalui
+Elastic IP dengan proksi Cloudflare yang pilihan.
 
-## Architecture
+## Seni Bina
 
 ```mermaid
 graph LR
@@ -44,72 +45,72 @@ graph LR
     VPC --- MS
 ```
 
-### Components
+### Komponen
 
-- **`terraform/`** — Infrastructure as Code with the AWS provider `~> 6.0`:
-  - VPC with public/private subnets, NAT gateway, and EIP for the web server (`terraform-aws-modules/vpc/aws`).
-  - `web_server` (public, t3.micro), `ansible_controller` (private), `monitoring_server` (private).
-  - Two Elastic IPs: one for the web server (`web-server-eip`) and one for the NAT gateway.
-  - Security groups: HTTP (80) open to the internet, SSH/management restricted to the VPC CIDR.
-  - ECR repository `ship` with scan-on-push, plus an IAM policy scoped to that repo.
-  - Remote state stored in an S3 bucket with locking (`use_lockfile`).
-- **`ansible/`** — Configuration management & deployment:
-  - Connects over the **AWS SSM** connection plugin (`community.aws.aws_ssm`), using a dynamic AWS EC2
-    inventory filtered by the `Role: devops-node` tag.
-  - `playbooks/site.yaml` → `ship-app` role: renders Dockerfile/nginx/docker-compose from Jinja2
-    templates, builds the image, pushes it to ECR, and runs the container with `docker compose`.
-  - `playbooks/monitoring.yaml` → Prometheus + Grafana + **Cloudflare Tunnel** on the monitoring server
-    and `node_exporter` on the web server (scraping on port 9100). The tunnel token is stored encrypted
-    in `ansible/group_vars/all/secrets.yaml` (Ansible Vault) and rendered into a `.env` file used by
-    `docker compose`.
-  - `terraform/userdata/ansible-controller.sh` bootstraps the controller: installs ansible, the SSM
-    session manager plugin, galaxy collections/roles, and the dynamic inventory config.
-- **`app/`** — The ship microsite:
-  - Vite + Three.js app; customisable via `ship.config.json` (name, colour, ship model, emblem).
-  - `npm test` runs a pre-flight gate that aborts on an invalid config; `npm run build` outputs the
-    static site to `dist/`.
+- **`terraform/`** — Infrastruktur sebagai Kod dengan provider AWS `~> 6.0`:
+  - VPC dengan subnet awam/peribadi, NAT gateway, dan EIP untuk web server (`terraform-aws-modules/vpc/aws`).
+  - `web_server` (awam, t3.micro), `ansible_controller` (peribadi), `monitoring_server` (peribadi).
+  - Dua Elastic IP: satu untuk web server (`web-server-eip`) dan satu untuk NAT gateway.
+  - Security groups: HTTP (80) terbuka ke internet, SSH/pengurusan dihadkan kepada CIDR VPC.
+  - Repositori ECR `ship` dengan scan-on-push, serta IAM policy yang hanya merangkumi repo tersebut.
+  - Keadaan jauh (state) disimpan dalam bucket S3 dengan locking (`use_lockfile`).
+- **`ansible/`** — Pengurusan konfigurasi & deployment:
+  - Bersambung melalui plugin sambungan **AWS SSM** (`community.aws.aws_ssm`), menggunakan inventor
+    dinamik AWS EC2 yang ditapis oleh tag `Role: devops-node`.
+  - `playbooks/site.yaml` → peranan `ship-app`: menjana Dockerfile/nginx/docker-compose daripada
+    templat Jinja2, membina imej, menghantarnya ke ECR, dan menjalankan kontena dengan `docker compose`.
+  - `playbooks/monitoring.yaml` → Prometheus + Grafana + **Cloudflare Tunnel** pada pelayan pemantauan
+    dan `node_exporter` pada web server (mengutip pada port 9100). Token tunnel disimpan dalam bentuk
+    disulitkan di `ansible/group_vars/all/secrets.yaml` (Ansible Vault) dan dijana ke dalam fail `.env`
+    yang digunakan oleh `docker compose`.
+  - `terraform/userdata/ansible-controller.sh` mem-bootstrap controller: memasang ansible, plugin SSM
+    session manager, koleksi/peranan galaxy, dan konfigurasi inventor dinamik.
+- **`app/`** — Laman mikro kapal:
+  - Aplikasi Vite + Three.js; boleh disuai melalui `ship.config.json` (nama, warna, model kapal, lambang).
+  - `npm test` menjalankan pintu pra-penerbangan yang menghenti proses jika konfig tidak sah;
+    `npm run build` menghasilkan tapak statik ke `dist/`.
 
 ## Stack
 
-| Layer          | Technology                                                       |
-| -------------- | ---------------------------------------------------------------- |
-| Infrastructure | Terraform, AWS VPC, EC2 (t3.micro x3), ECR, EIP x2, IAM, S3 state   |
-| Config/deploy  | Ansible, AWS SSM (Session Manager), Ansible Vault, Docker, nginx     |
-| App            | Node 20, Vite, Three.js                                            |
-| Monitoring     | Prometheus, Grafana, node_exporter, Cloudflare Tunnel                |
-| CI/CD          | GitHub Actions (GitHub Pages)                                    |
+| Lapisan      | Teknologi                                                         |
+| ------------ | ---------------------------------------------------------------- |
+| Infra        | Terraform, AWS VPC, EC2 (t3.micro x3), ECR, EIP x2, IAM, S3 state|
+| Config/deploy| Ansible, AWS SSM (Session Manager), Ansible Vault, Docker, nginx  |
+| Aplikasi     | Node 20, Vite, Three.js                                          |
+| Pemantauan   | Prometheus, Grafana, node_exporter, Cloudflare Tunnel            |
+| CI/CD        | GitHub Actions (GitHub Pages)                                    |
 
-## Project Structure
+## Struktur Projek
 
 ```
 .
-├── app/               # Vite + Three.js ship microsite
-├── ansible/           # Playbooks, roles & dynamic inventory
-│   ├── group_vars/all/secrets.yaml  # Encrypted Cloudflare tunnel token (Vault)
+├── app/               # Laman mikro Vite + Three.js kapal
+├── ansible/           # Playbooks, peranan & inventor dinamik
+│   ├── group_vars/all/secrets.yaml  # Token Cloudflare tunnel disulitkan (Vault)
 │   └── playbooks/
-│       ├── site.yaml       # Docker + ship app on web_server
+│       ├── site.yaml       # Docker + ship app pada web_server
 │       └── monitoring.yaml # Prometheus/Grafana + cloudflared + node_exporter
-├── terraform/         # AWS infrastructure (VPC, EC2, ECR, SG, IAM)
+├── terraform/         # Infrastruktur AWS (VPC, EC2, ECR, SG, IAM)
 │   └── userdata/ansible-controller.sh
-└── .github/workflows/ # Deploy this readme to GitHub Pages
+└── .github/workflows/ # Menerbitkan readme ini ke GitHub Pages
 ```
 
-## Getting Started
+## Memulakan
 
-### App (local development)
+### Aplikasi (pembangunan tempatan)
 
 ```bash
 cd app
 npm install
-npm test        # pre-flight gate: aborts if ship.config.json is invalid
-npm run dev     # live preview
-npm run build   # static site → dist/
-npm run preview # serve build on :8080
+npm test        # pintu pra-penerbangan: berhenti jika ship.config.json tidak sah
+npm run dev     # pratonton langsung
+npm run build   # tapak statik → dist/
+npm run preview # menghidangkan build pada :8080
 ```
 
-Customise your ship by editing `app/ship.config.json`.
+Suai kapal anda dengan menyunting `app/ship.config.json`.
 
-### Infrastructure
+### Infrastruktur
 
 ```bash
 cd terraform
@@ -120,24 +121,24 @@ terraform apply -var-file terraform.tfvars
 
 ### Deployment
 
-From the `ansible_controller`, run the playbooks (they connect to the nodes over SSM). The monitoring
-playbook loads the encrypted Cloudflare tunnel token, so it needs the Vault password:
+Dari `ansible_controller`, jalankan playbooks (mereka bersambung ke nod melalui SSM). Playbook
+pemantauan memuatkan token Cloudflare tunnel yang disulitkan, jadi ia memerlukan kata laluan Vault:
 
 ```bash
 ansible-playbook playbooks/site.yaml -e "aws_region=ap-southeast-1"
 ansible-playbook playbooks/monitoring.yaml --ask-vault-pass
 ```
 
-## Monitoring
+## Pemantauan
 
-- **Prometheus** scrapes the web server every 15s via `node_exporter` (`:9100`).
-- **Grafana** (port 3000) visualises the metrics on the monitoring server.
-- **Cloudflare Tunnel** exposes Grafana at `https://monitoring.yelight.cc` — no inbound port opened
-  on the private monitoring server; the tunnel connects out to the Cloudflare edge.
-- The **Node Exporter Full** Grafana dashboard (ID `1860`) shows CPU, memory and disk of the web server.
+- **Prometheus** mengutip web server setiap 15 saat melalui `node_exporter` (`:9100`).
+- **Grafana** (port 3000) memaparkan metrik pada pelayan pemantauan.
+- **Cloudflare Tunnel** mendedahkan Grafana di `https://monitoring.yelight.cc` — tanpa membuka port
+  masuk pada pelayan pemantauan peribadi; tunnel bersambung keluar ke edge Cloudflare.
+- Dashboard Grafana **Node Exporter Full** (ID `1860`) memaparkan CPU, memori dan cakera web server.
 
 ## GitHub Pages
 
-The root `readme.md` is published to a public GitHub Pages site by the workflow in
-`.github/workflows/pages.yaml` — a push to `main` renders the markdown to HTML with `pandoc` and
-deploys it with the official `actions/deploy-pages` action.
+`readme.md` di peringkat akar diterbitkan ke tapak GitHub Pages awam oleh workflow dalam
+`.github/workflows/pages.yaml` — tolakan ke `main` menjadikan markdown kepada HTML dengan `pandoc`
+(dengan rajah Mermaid), dan men-deploy-nya dengan tindakan rasmi `actions/deploy-pages`.
