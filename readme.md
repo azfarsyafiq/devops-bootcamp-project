@@ -4,6 +4,11 @@ Projek DevOps hujung-ke-hujung yang menyediakan **laman mikro Three.js kapal bol
 serta memantaunya — menggunakan Terraform sebagai infrastruktur-sebagai-kod, Ansible untuk pengurusan
 konfigurasi dan deployment, serta workflow GitHub Actions yang menerbitkan halaman ini ke GitHub Pages.
 
+## URL 
+ https://web.yelight.cc/ -- website
+ https://monitoring.yelight.cc  -- Grafana dashboard
+ https://github.com/azfarsyafiq/devops-bootcamp-project -- Repo
+
 ## Gambaran Keseluruhan
 
 Pipeline ini mengambil aplikasi Vite + Three.js yang kecil (`app/`), membungkusnya dalam imej Docker,
@@ -18,42 +23,11 @@ Elastic IP dengan proksi Cloudflare yang pilihan.
 
 ## Seni Bina
 
-```text
-                         ┌────────────────── CLOUDFLARE ──────────────────┐
-                         │                                                │
-                         │  web.infratify.com   monitoring.yelight.cc     │
-                         │       │                        │               │
-                         └───────┼────────────────────────┼───────────────┘
-                                 │ (proxy)                │ (tunnel keluar)
-                                 │                        ▼
-┌───────────────────────────────────────────────────────────────────────────┐
-│                      AWS  (VPC devops-vpc 10.0.0.0/24)                   │
-│                                                                           │
-│  ┌───────────────── PUBLIC ─────────────────┐                             │
-│  │  web_server  t3.micro                    │                             │
-│  │  EIP 54.169.44.191                       │                             │
-│  │  nginx ──► ship app (Docker)             │                             │
-│  │  node_exporter :9100                     │                             │
-│  └───────────────┬──────────────────────────┘                             │
-│                  │  scrape :9100 (setiap 15s)                             │
-│  ┌───────────────▼────────── PRIVATE ──────┐                             │
-│  │  monitoring_server  t3.micro            │                             │
-│  │  Prometheus :9090                       │                             │
-│  │  Grafana    :3000                       │                             │
-│  │  cloudflared                            │                             │
-│  └───────────────┬─────────────────────────┘                             │
-│                  │  ansible (AWS SSM)                                    │
-│  ┌───────────────▼──────────────────────────┐                             │
-│  │  ansible_controller  t3.micro            │                             │
-│  │  ansible + aws_ssm plugin + inventory    │                             │
-│  └──────────────────────────────────────────┘                             │
-│                                                                           │
-│  Web <──pull / push──> ECR repo: ship                                    │
-└───────────────────────────────────────────────────────────────────────────┘
-                     │
-                     ▼
-       GitHub repo ──clone /opt/ship──► web_server (via SSM)
-```
+ARKITEKTUR PROJEK
+
+![Dashboard Grafana](docs/grafana_dashboard.png)
+
+![Web App](docs/webapp.png)
 
 ### Komponen
 
@@ -152,3 +126,4 @@ ansible-playbook playbooks/monitoring.yaml --ask-vault-pass
 `readme.md` di peringkat akar diterbitkan ke tapak GitHub Pages awam oleh workflow dalam
 `.github/workflows/pages.yaml` — tolakan ke `main` menjadikan markdown kepada HTML dengan `pandoc`
 (dengan rajah Mermaid), dan men-deploy-nya dengan tindakan rasmi `actions/deploy-pages`.
+
