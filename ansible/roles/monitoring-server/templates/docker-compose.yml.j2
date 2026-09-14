@@ -16,7 +16,9 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - grafana-data:/var/lib/grafana                     # Named volume
+      - grafana-data:/var/lib/grafana                     
+      - ./provisioning:/etc/grafana/provisioning         
+      - ./dashboards:/var/lib/grafana/dashboards
     restart: unless-stopped
 
   cloudflared:

@@ -37,6 +37,18 @@
     dest: "{{ monitoring_dir }}/.env"
     mode: "0600"
 
+- name: Copy grafana provisioning configs
+  ansible.builtin.copy:
+    src: provisioning/
+    dest: "{{ monitoring_dir }}/provisioning/"
+    mode: "0644"
+
+- name: Copy grafana dashboards
+  ansible.builtin.copy:
+    src: dashboards/
+    dest: "{{ monitoring_dir }}/dashboards/"
+    mode: "0644"
+    
 - name: Start monitoring stack guna docker compose
   community.docker.docker_compose_v2:
     project_src: "{{ monitoring_dir }}"
