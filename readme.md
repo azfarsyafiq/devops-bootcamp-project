@@ -4,11 +4,14 @@ Projek DevOps hujung-ke-hujung yang menyediakan **laman mikro Three.js kapal bol
 serta memantaunya — menggunakan Terraform sebagai infrastruktur-sebagai-kod, Ansible untuk pengurusan
 konfigurasi dan deployment, serta workflow GitHub Actions yang menerbitkan halaman ini ke GitHub Pages.
 
+## IMPORTANT
+  Infrastructure telah ditutup setelah habis penilaian pada 15/9/2026
+
 ## URL 
  https://web.yelight.cc/ -- website
  https://monitoring.yelight.cc  -- Grafana dashboard
  https://github.com/azfarsyafiq/devops-bootcamp-project -- Repo
-
+ 
 ## Gambaran Keseluruhan
 
 Pipeline ini mengambil aplikasi Vite + Three.js yang kecil (`app/`), membungkusnya dalam imej Docker,
